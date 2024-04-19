@@ -47,6 +47,40 @@ router.post('/signup', [
     res.json({token});
 });
 
+router.post('/login', async (req, res) => {
+    const {email, password} = req.body;
+
+    let user = users.find((user) => {
+        return user.email === email;
+    });
+
+    if(!user) {
+        return res.status(400).json({
+            "errors": [
+                {"msg": "Invalid Credentials"}]
+        })
+    };
+
+    let isMatch = await bcrypt.compare(password, user.password);
+
+    if(!isMatch) {
+        return res.status(400).json({
+            "errors": [
+                {"msg": "Invalid Credentials"}]
+        })
+    };
+
+    const token = await JWT.sign({
+        email
+    }, 'bd7683e2gbdy823bd28db82bduiwdbd2783dbu32ib87', {
+        expiresIn: 3600000
+    });
+
+    res.json({token});
+});
+
+
+
 
 router.get('/all', (req, res) => {
     res.json(users);
