@@ -1,11 +1,12 @@
 const router = require('express').Router();
 const {check, validationResult} = require('express-validator');
 const {users} = require('../db');
+const bcrypt = require('bcrypt');
 
 router.post('/signup', [
     check('email', 'Please provide a valid email').isEmail(),
-    check('password', 'Password cannot be shorter than 5 characters').isLength({min: 6})
-], (req, res) => {
+    check('password', 'Password cannot be shorter than 5 characters').isLength({min: 6})],
+    async (req, res) => {
     const {email, password} = req.body;
 
     //Input Validation
@@ -28,7 +29,20 @@ router.post('/signup', [
                 {"msg": "User already exists"}]
         })
     }
+
+    let hashedPassword = await bcrypt.hash(password, 10);
+
+    console.log(hashedPassword);
+
+    users.push({
+        email,
+        password: hashedPassword
+    });
     res.send('<h1>Validation passed</h1>');
+});
+
+router.get('/all', (req, res) => {
+    res.json(users);
 });
 
 module.exports = router;
